@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "your-dockerhub-username/${JOB_NAME}:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "http://78.46.145.88:8081/repository/${JOB_NAME}:${BUILD_NUMBER}"
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'develop', url: 'https://github.com/your-org/your-project.git'
+                git branch: 'dev', url: 'https://github.com/Silkensway-Clothing/silkensway_clothing.git'
             }
         }
 
