@@ -22,7 +22,9 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh """
+                    echo $DOCKER_PASS | docker login 78.46.145.88:8081 -u $DOCKER_USER --password-stdin
+                    """
                     sh 'docker push $DOCKER_IMAGE'
                 }
             }
