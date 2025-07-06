@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "http://78.46.145.88:8081/repository/${JOB_NAME}:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "78.46.145.88:8081/django-app-deploy:${BUILD_NUMBER}"
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID
     }
 
@@ -15,7 +15,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                sh "docker build -t $DOCKER_IMAGE ."
             }
         }
 
