@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-django-app
+  namespace: dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-django-app
+  template:
+    metadata:
+      labels:
+        app: my-django-app
+    spec:
+      containers:
+      - name: my-django-app
+        image: 78.46.145.88:8081/repository/django-project:latest
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: django-config
+        - secretRef:
+            name: django-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-app-service
+  namespace: dev
+spec:
+  type: LoadBalancer
+  selector:
+    app: django-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
