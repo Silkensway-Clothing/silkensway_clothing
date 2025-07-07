@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "78.46.145.88:5000/django-app-deploy:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "78.46.145.88:5000/my-django-app:${BUILD_NUMBER}"
         BRANCH_NAME = 'dev'
     }
 
@@ -46,7 +46,7 @@ pipeline {
                         echo "✅ Using kubeconfig: \$KUBECONFIG"
                         kubectl --insecure-skip-tls-verify=true get pods -n ${namespace} || true
                         kubectl --insecure-skip-tls-verify=true \
-                        set image deployment/django-app-deploy django-app-deploy=$DOCKER_IMAGE -n ${namespace} || \
+                        set image deployment/my-django-app my-django-app=$DOCKER_IMAGE -n ${namespace} || \
                         kubectl --insecure-skip-tls-verify=true \
                         apply -f kubernetes/${namespace} -n ${namespace} --validate=false
                         """
