@@ -34,10 +34,8 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     script {
-                        def namespace = ''
-                        if (BRANCH_NAME == 'dev') {
-                            namespace = 'dev'
-                        } else if (BRANCH_NAME == 'test') {
+                        def namespace = 'dev' // Default namespace
+                        if (BRANCH_NAME == 'test') {
                             namespace = 'test'
                         } else if (BRANCH_NAME == 'main') {
                             namespace = 'prod'
@@ -46,7 +44,7 @@ pipeline {
                         sh """
                         export KUBECONFIG=$KUBECONFIG_FILE
                         kubectl --insecure-skip-tls-verify=true \
-                        set image deployment/${JOB_NAME} ${JOB_NAME}=$DOCKER_IMAGE -n ${namespace} || \
+                        set image deployment/django-app-deploy django-app-deploy=$DOCKER_IMAGE -n ${namespace} || \
                         kubectl --insecure-skip-tls-verify=true \
                         apply -f kubernetes/${namespace} -n ${namespace} --validate=false
                         """
