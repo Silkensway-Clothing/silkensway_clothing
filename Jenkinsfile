@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "78.46.145.88:5000/my-django-app:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "nexus.blueappleonline.com:5000/django-app-deploy:${BUILD_NUMBER}"
         BRANCH_NAME = 'dev'
     }
 
@@ -23,7 +23,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
-                    echo "$DOCKER_PASS" | docker login 78.46.145.88:5000 -u "$DOCKER_USER" --password-stdin
+                    echo "$DOCKER_PASS" | docker login nexus.blueappleonline.com:5000 -u "$DOCKER_USER" --password-stdin
                     docker push $DOCKER_IMAGE
                     '''
                 }
