@@ -42,10 +42,9 @@ pipeline {
                         }
 
                         sh """
-                        export KUBECONFIG=$KUBECONFIG_FILE
-                        echo "✅ Using KUBECONFIG: $KUBECONFIG"
-                        kubectl --insecure-skip-tls-verify=true \
-                        get namespaces
+                        export KUBECONFIG=${KUBECONFIG_FILE}
+                        echo "✅ Using kubeconfig: \$KUBECONFIG"
+                        kubectl --insecure-skip-tls-verify=true get pods -n ${namespace} || true
                         kubectl --insecure-skip-tls-verify=true \
                         set image deployment/django-app-deploy django-app-deploy=$DOCKER_IMAGE -n ${namespace} || \
                         kubectl --insecure-skip-tls-verify=true \
