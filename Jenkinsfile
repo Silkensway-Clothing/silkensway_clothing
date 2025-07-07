@@ -22,10 +22,10 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
+                    sh """
                     echo "$DOCKER_PASS" | docker login 78.46.145.88:5000 -u "$DOCKER_USER" --password-stdin
                     docker push $DOCKER_IMAGE
-                    '''
+                    """
                 }
             }
         }
@@ -34,21 +34,12 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     script {
-                        def namespace = 'dev' // Default namespace
-                        if (BRANCH_NAME == 'test') {
-                            namespace = 'test'
-                        } else if (BRANCH_NAME == 'main') {
-                            namespace = 'prod'
-                        }
-
+                        def namespace = BRANCH_NAME
                         sh """
                         export KUBECONFIG=${KUBECONFIG_FILE}
-                        echo "✅ Using kubeconfig: \$KUBECONFIG"
-                        kubectl --insecure-skip-tls-verify=true get pods -n ${namespace} || true
-                        kubectl --insecure-skip-tls-verify=true \
-                        set image deployment/django-app-deploy django-app-deploy=$DOCKER_IMAGE -n ${namespace} || \
-                        kubectl --insecure-skip-tls-verify=true \
-                        apply -f kubernetes/${namespace} -n ${namespace} --validate=false
+                        kubectl get pods -n ${namespace}
+                        kubectl set image deployment/django-app-deploy django-app-deploy=$DOCKER_IMAGE -n ${namespace} || \
+                        kubectl apply -f kubernetes/${namespace} -n ${namespace} --validate=false
                         """
                     }
                 }
