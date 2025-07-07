@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "78.46.145.88:5000/django-app-deploy:${BUILD_NUMBER}" // Make sure port matches Nexus registry
-        BRANCH_NAME = 'dev' // Set your branch here
+        DOCKER_IMAGE = "78.46.145.88:5000/django-app-deploy:${BUILD_NUMBER}"
+        BRANCH_NAME = 'dev'
     }
 
     stages {
@@ -32,21 +32,23 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    def namespace = ''
-                    if (BRANCH_NAME == 'dev') {
-                        namespace = 'dev'
-                    } else if (BRANCH_NAME == 'test') {
-                        namespace = 'test'
-                    } else if (BRANCH_NAME == 'main') {
-                        namespace = 'prod'
-                    }
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                    script {
+                        def namespace = ''
+                        if (BRANCH_NAME == 'dev') {
+                            namespace = 'dev'
+                        } else if (BRANCH_NAME == 'test') {
+                            namespace = 'test'
+                        } else if (BRANCH_NAME == 'main') {
+                            namespace = 'prod'
+                        }
 
-                    // ✅ Use kubeconfig as a temporary file
-                    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                         sh """
-                        kubectl --kubeconfig=$KUBECONFIG_FILE --insecure-skip-tls-verify=true set image deployment/${JOB_NAME} ${JOB_NAME}=$DOCKER_IMAGE -n ${namespace} || \
-                        kubectl --kubeconfig=$KUBECONFIG_FILE apply -f kubernetes/${namespace} -n ${namespace}
+                        export KUBECONFIG=$KUBECONFIG_FILE
+                        kubectl --insecure-skip-tls-verify=true \
+                        set image deployment/${JOB_NAME} ${JOB_NAME}=$DOCKER_IMAGE -n ${namespace} || \
+                        kubectl --insecure-skip-tls-verify=true \
+                        apply -f kubernetes/${namespace} -n ${namespace} --validate=false
                         """
                     }
                 }
