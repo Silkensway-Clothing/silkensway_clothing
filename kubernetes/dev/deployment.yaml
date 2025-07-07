@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: my-django-app
-        image: nexus.blueappleonline.com:5002/django-app-deploy:21
+        image: nexus.blueappleonline.com:5001/django-app-deploy:21
         ports:
         - containerPort: 8000
         envFrom:
