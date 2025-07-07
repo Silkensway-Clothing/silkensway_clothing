@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "78.46.145.88:8081/django-app-deploy:${BUILD_NUMBER}"
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID
+        BRANCH_NAME = 'dev'
     }
 
     stages {
