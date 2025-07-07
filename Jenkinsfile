@@ -45,7 +45,7 @@ pipeline {
                     // ✅ Use kubeconfig as a temporary file
                     withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                         sh """
-                        kubectl --kubeconfig=$KUBECONFIG_FILE set image deployment/${JOB_NAME} ${JOB_NAME}=$DOCKER_IMAGE -n ${namespace} || \
+                        kubectl --kubeconfig=$KUBECONFIG_FILE --insecure-skip-tls-verify=true set image deployment/${JOB_NAME} ${JOB_NAME}=$DOCKER_IMAGE -n ${namespace} || \
                         kubectl --kubeconfig=$KUBECONFIG_FILE apply -f kubernetes/${namespace} -n ${namespace}
                         """
                     }
