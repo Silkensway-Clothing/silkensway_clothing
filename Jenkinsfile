@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "78.46.145.88:8081/django-app-deploy:${BUILD_NUMBER}"
-        KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID
-        BRANCH_NAME = 'dev'
+        DOCKER_IMAGE = "78.46.145.88:5000/django-app-deploy:${BUILD_NUMBER}" // Make sure port matches Nexus registry
+        BRANCH_NAME = 'dev' // Set your branch here
     }
 
     stages {
@@ -25,6 +24,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
                     echo "$DOCKER_PASS" | docker login 78.46.145.88:5000 -u "$DOCKER_USER" --password-stdin
+                    docker push $DOCKER_IMAGE
                     '''
                 }
             }
@@ -34,14 +34,21 @@ pipeline {
             steps {
                 script {
                     def namespace = ''
-                    if (BRANCH_NAME == 'develop') {
+                    if (BRANCH_NAME == 'dev') {
                         namespace = 'dev'
                     } else if (BRANCH_NAME == 'test') {
                         namespace = 'test'
                     } else if (BRANCH_NAME == 'main') {
                         namespace = 'prod'
                     }
-                    sh "kubectl --kubeconfig=$KUBE_CONFIG set image deployment/${JOB_NAME} ${JOB_NAME}=$DOCKER_IMAGE -n ${namespace} || kubectl --kubeconfig=$KUBE_CONFIG apply -f kubernetes/${namespace} -n ${namespace}"
+
+                    // ✅ Use kubeconfig as a temporary file
+                    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                        sh """
+                        kubectl --kubeconfig=$KUBECONFIG_FILE set image deployment/${JOB_NAME} ${JOB_NAME}=$DOCKER_IMAGE -n ${namespace} || \
+                        kubectl --kubeconfig=$KUBECONFIG_FILE apply -f kubernetes/${namespace} -n ${namespace}
+                        """
+                    }
                 }
             }
         }
@@ -49,10 +56,10 @@ pipeline {
 
     post {
         success {
-            echo "Deployment successful!"
+            echo "✅ Deployment successful!"
         }
         failure {
-            echo "Deployment failed!"
+            echo "❌ Deployment failed!"
         }
     }
 }
